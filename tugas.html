@@ -1,37 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Piramida</title>
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.js"></script>
+
+    <!-- Versi A-Frame yang lebih stabil -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <!-- AR.js versi stabil yang kompatibel dengan A-Frame 1.4 -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #000; }
+
+        #overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #overlay h2 { font-size: 1.4rem; margin-bottom: 12px; color: #FFD700; }
+        #overlay p  { font-size: 0.9rem; color: #ccc; margin-bottom: 20px; line-height: 1.6; }
+        #startBtn {
+            padding: 12px 32px;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #startBtn:hover { background: #fbbf24; }
+
+        #info {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #FFD700;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 0.82rem;
+            z-index: 100;
+            pointer-events: none;
+            display: none;
+        }
+    </style>
 </head>
-<body style="margin: 0px; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+<body>
+
+    <!-- Overlay: instruksi sebelum mulai -->
+    <div id="overlay">
+        <h2>🔺 AR Piramida</h2>
+        <p>
+            Aplikasi ini memerlukan izin kamera.<br>
+            Pastikan kamu membuka halaman ini melalui <strong>HTTPS</strong> atau <strong>localhost</strong>.<br><br>
+            Setelah kamera aktif, arahkan ke <strong>marker Hiro</strong> untuk melihat piramida muncul.
+        </p>
+        <button id="startBtn" onclick="startAR()">▶ Mulai AR</button>
+    </div>
+
+    <div id="info">📷 Arahkan kamera ke marker Hiro</div>
+
+    <a-scene
+        vr-mode-ui="enabled: false"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        renderer="logarithmicDepthBuffer: true; precision: medium;"
+        id="arScene"
+        style="display:none;">
 
         <a-marker preset="hiro">
-
-            <!--
-                Piramida dibuat dari <a-cone> dengan segments-radial="4"
-                (4 sisi = bentuk persegi di bawah = piramida)
-                - radius-bottom : lebar alas piramida
-                - radius-top    : ujung atas (0 = runcing)
-                - height        : tinggi piramida
-            -->
+            <!-- Piramida: a-cone dengan 4 sisi -->
             <a-cone
+                id="pyramid"
                 position="0 0.75 0"
                 radius-bottom="0.7"
                 radius-top="0"
                 height="1.5"
                 segments-radial="4"
                 rotation="0 45 0"
-                material="color: #FFD700; opacity: 0.9; metalness: 0.4; roughness: 0.3;"
-                animation="property: rotation; from: 0 45 0; to: 0 405 0; loop: true; dur: 6000; easing: linear;">
+                material="color: #FFD700; opacity: 0.95; metalness: 0.5; roughness: 0.2; shader: standard;"
+                animation__rot="property: rotation; from: 0 45 0; to: 0 405 0; loop: true; dur: 5000; easing: linear;"
+                animation__float="property: position; from: 0 0.65 0; to: 0 0.85 0; loop: true; dur: 1800; dir: alternate; easing: easeInOutSine;">
             </a-cone>
-
         </a-marker>
 
         <a-entity camera></a-entity>
-
     </a-scene>
+
+    <script>
+        function startAR() {
+            // Minta izin kamera dulu secara eksplisit
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(stream) {
+                    stream.getTracks().forEach(t => t.stop()); // stop dulu, AR.js akan buka sendiri
+                    document.getElementById('overlay').style.display = 'none';
+                    document.getElementById('arScene').style.display = 'block';
+                    document.getElementById('info').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.querySelector('#overlay p').innerHTML =
+                        '❌ <strong>Kamera tidak bisa diakses.</strong><br><br>' +
+                        'Kemungkinan penyebab:<br>' +
+                        '• Halaman tidak dibuka via HTTPS / localhost<br>' +
+                        '• Izin kamera ditolak di browser<br>' +
+                        '• Kamera sedang dipakai aplikasi lain<br><br>' +
+                        '<small>Error: ' + err.message + '</small>';
+                    document.getElementById('startBtn').style.display = 'none';
+                });
+        }
+    </script>
 </body>
 </html>
