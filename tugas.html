@@ -1,1 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AR Piramida</title>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.3.2/aframe/build/aframe-ar.js"></script>
+</head>
+<body style="margin: 0px; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
 
+        <a-marker preset="hiro">
+
+            <!--
+                Piramida dibuat dari <a-cone> dengan segments-radial="4"
+                (4 sisi = bentuk persegi di bawah = piramida)
+                - radius-bottom : lebar alas piramida
+                - radius-top    : ujung atas (0 = runcing)
+                - height        : tinggi piramida
+            -->
+            <a-cone
+                position="0 0.75 0"
+                radius-bottom="0.7"
+                radius-top="0"
+                height="1.5"
+                segments-radial="4"
+                rotation="0 45 0"
+                material="color: #FFD700; opacity: 0.9; metalness: 0.4; roughness: 0.3;"
+                animation="property: rotation; from: 0 45 0; to: 0 405 0; loop: true; dur: 6000; easing: linear;">
+            </a-cone>
+
+        </a-marker>
+
+        <a-entity camera></a-entity>
+
+    </a-scene>
+</body>
+</html>
